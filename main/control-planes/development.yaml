@@ -1,0 +1,46 @@
+apiVersion: mxp.upbound.io/v1alpha1
+kind: ControlPlane
+metadata:
+  name: development
+  labels:
+    platform: development
+spec:
+  writeConnectionSecretToRef:
+    name: kubeconfig-development
+    namespace: flux-system
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: development-platform
+  namespace: flux-system
+spec:
+  interval: 1m0s
+  path: ./platform/development
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  kubeConfig:
+    secretRef:
+      name: kubeconfig-development
+      key: kubeconfig
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: development-runtime
+  namespace: flux-system
+spec:
+  dependsOn:
+  - name: development-platform
+  interval: 1m0s
+  path: ./runtime/development
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  kubeConfig:
+    secretRef:
+      name: kubeconfig-development
+      key: kubeconfig
